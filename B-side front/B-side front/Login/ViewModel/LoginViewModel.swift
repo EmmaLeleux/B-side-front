@@ -119,6 +119,8 @@ class LoginViewModel {
         }
     
     func createUser(username: String, password: String, picture: String) async throws {
+        
+        print("Dans la foinction")
         guard let url = URL(string: "http://localhost:8080/user") else {
             throw URLError(.badURL)
         }
@@ -127,17 +129,22 @@ class LoginViewModel {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
+        
         let payload = Registration(
             username: username,
             password: password,
             picture: picture
         )
+        
 
         let encoder = JSONEncoder()
         request.httpBody = try encoder.encode(payload)
 
         let (data, response) = try await URLSession.shared.data(for: request)
         print(String(data: data, encoding: .utf8) ?? "No data")
+        let jsonString = String(data: data, encoding: .utf8)
+        print(jsonString ?? "No JSON")
+
 
         await login(username: username, password: password)
         guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
