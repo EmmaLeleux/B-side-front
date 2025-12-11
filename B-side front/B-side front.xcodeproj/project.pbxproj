@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		C6661E412EEAF8D400325258 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = C6661E402EEAF8D400325258 /* KeychainAccess */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		B5273E792EE9A9D100A5BC18 /* B-side front.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "B-side front.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C6661E412EEAF8D400325258 /* KeychainAccess in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = "B-side front";
 			packageProductDependencies = (
+				C6661E402EEAF8D400325258 /* KeychainAccess */,
 			);
 			productName = "B-side front";
 			productReference = B5273E792EE9A9D100A5BC18 /* B-side front.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = B5273E702EE9A9D100A5BC18;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				C6661E3F2EEAF8D400325258 /* XCRemoteSwiftPackageReference "KeychainAccess" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B5273E7A2EE9A9D100A5BC18 /* Products */;
 			projectDirPath = "";
@@ -332,6 +341,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		C6661E3F2EEAF8D400325258 /* XCRemoteSwiftPackageReference "KeychainAccess" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kishikawakatsumi/KeychainAccess.git";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C6661E402EEAF8D400325258 /* KeychainAccess */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C6661E3F2EEAF8D400325258 /* XCRemoteSwiftPackageReference "KeychainAccess" */;
+			productName = KeychainAccess;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B5273E712EE9A9D100A5BC18 /* Project object */;
 }
