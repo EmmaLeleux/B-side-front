@@ -6,16 +6,26 @@
 //
 
 import SwiftUI
+import AVFoundation
 
 struct ContentView: View {
+  @State var loginVM = LoginViewModel()
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Welcome to the B-Siiiiiiiide")
+        VStack{
+            if loginVM.isAuthenticated{
+                LandingView()
+                
+                Button(action: {
+                    loginVM.logout()
+                }, label: {
+                    Text("déconnexion")
+                })
+            }
+            else{
+                LoginView()
+            }
         }
-        .padding()
+        .environment(loginVM)
     }
 }
 

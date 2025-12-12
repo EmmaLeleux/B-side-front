@@ -9,8 +9,9 @@ import SwiftUI
 
 struct VinylCarouselView: View {
     @State private var vm = CarouselViewModel()
+    @Environment(LoginViewModel.self) var loginVM
     @State private var dragOffset: Double = 0
-    
+    @State var selectedPlaylist: Playlist? = nil
     // État pour gérer l'animation de pression
     @State private var pressedGenre: MusicGenre? = nil
     
@@ -21,42 +22,45 @@ struct VinylCarouselView: View {
     
     var body: some View {
         ZStack {
-            ForEach(Array(vm.items.enumerated()), id: \.element) { index, genre in
-                let baseAngle = Double(index) * vm.anglePerItem
-                let currentAngleDegrees = baseAngle + vm.rotationAngle + dragOffset
-                let radians = currentAngleDegrees * .pi / 180
-                
-                // Calcul de position
-                let xOffset = radiusX * cos(radians)
-                let yOffset = radiusY * sin(radians)
-                
-                // Calcul de profondeur (-1 = haut/fond, 1 = bas/devant pour le sin)
-                // Note: Ici sin(-90) = -1 est le sommet visuel en SwiftUI coordinates
-                let heightFactor = -sin(radians)
-                let isVisible = heightFactor > -0.2
-                
-                // FACTEUR D'ÉCHELLE DU CARROUSEL (Loupe au centre)
-                let carouselScale = 0.8 + (0.5 * max(0, heightFactor))
-                
-                // FACTEUR D'ÉCHELLE DE PRESSION (Si on appuie dessus)
-                let pressScale = (pressedGenre == genre) ? 0.9 : 1.0
-                
-                if isVisible {
-                    VStack {
-                        Image(genre.rawValue)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: iconSize, height: iconSize)
-                            .shadow(color: .black.opacity(0.4), radius: 5, x: 0, y: 5)
-                    }
-                    // On multiplie les échelles : (Loupe) x (Pression)
-                    .scaleEffect(carouselScale * pressScale)
-                    .opacity(0.5 + (0.5 * max(0, heightFactor)))
-                    .zIndex(heightFactor)
-                    .offset(x: xOffset, y: yOffset)
-                    // GESTION DU TAP (PRESSION)
-                    .onTapGesture {
-                        animatePress(for: genre)
+            if let user = loginVM.currentUser{
+                ForEach(Array(user.playlists.enumerated()), id: \.offset) { index, playlist in
+                    let baseAngle = Double(index) * vm.anglePerItem
+                    let currentAngleDegrees = baseAngle + vm.rotationAngle + dragOffset
+                    let radians = currentAngleDegrees * .pi / 180
+                    
+                    // Calcul de position
+                    let xOffset = radiusX * cos(radians)
+                    let yOffset = radiusY * sin(radians)
+                    
+                    // Calcul de profondeur
+                    let heightFactor = -sin(radians)
+                    let isVisible = heightFactor > -0.2
+                    
+                    // FACTEUR D'ÉCHELLE DU CARROUSEL (Loupe au centre)
+                    let carouselScale = 0.8 + (0.5 * max(0, heightFactor))
+                    
+                    // FACTEUR D'ÉCHELLE DE PRESSION (Si on appuie dessus)
+                    let pressScale = (selectedPlaylist == playlist) ? 0.9 : 1.0
+                    
+                    if isVisible {
+                        VStack {
+                            AsyncImage(url: URL(string: playlist.picture)) { image in
+                                image
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: iconSize, height: iconSize)
+                                    .shadow(color: .black.opacity(0.4), radius: 5, x: 0, y: 5)
+                            } placeholder: {
+                                ProgressView()
+                            }
+                        }
+                        .scaleEffect(carouselScale * pressScale)
+                        .opacity(0.5 + (0.5 * max(0, heightFactor)))
+                        .zIndex(heightFactor)
+                        .offset(x: xOffset, y: yOffset)
+                        .onTapGesture {
+                            animatePress(for: playlist)
+                        }
                     }
                 }
             }
@@ -79,14 +83,14 @@ struct VinylCarouselView: View {
                 }
         )
         // Petit retour haptique pour le style (optionnel)
-        .sensoryFeedback(.selection, trigger: pressedGenre)
+        .sensoryFeedback(.selection, trigger: selectedPlaylist)
     }
     
     // Fonction pour gérer l'effet "Ressort" du bouton
-    private func animatePress(for genre: MusicGenre) {
+    private func animatePress(for genre: Playlist) {
         // 1. On enfonce le bouton
         withAnimation(.easeOut(duration: 0.1)) {
-            pressedGenre = genre
+            selectedPlaylist = genre
         }
         
         // 2. On le relâche (rebond)
@@ -96,7 +100,7 @@ struct VinylCarouselView: View {
             }
             
             // ICI : Action à déclencher (ex: Sélectionner le genre ou lancer le jeu)
-            print("Genre sélectionné : \(genre.title)")
+            print("Genre sélectionné : \(genre.name)")
             // Si tu veux que le tap fasse tourner la roue vers cet item, on pourrait l'ajouter ici.
         }
     }
@@ -105,6 +109,6 @@ struct VinylCarouselView: View {
 #Preview {
     ZStack {
         Color.black.ignoresSafeArea()
-        VinylCarouselView()
+        VinylCarouselView().environment(LoginViewModel())
     }
 }

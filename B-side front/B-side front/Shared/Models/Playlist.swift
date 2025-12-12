@@ -12,4 +12,5 @@ struct Playlist: Codable, Identifiable, Equatable {
     let name: String
     let description: String
     let picture: String
+    let musiques: [Musique]
 }
