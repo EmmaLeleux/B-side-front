@@ -1,10 +1,13 @@
+////
+////  ShopView.swift
+////  B-side front
+////
+////  Created by Chab on 11/12/2025.
+////
 //
-//  ShopView.swift
-//  B-side front
 //
-//  Created by Chab on 11/12/2025.
+//import SwiftUI
 //
-
 
 import SwiftUI
 

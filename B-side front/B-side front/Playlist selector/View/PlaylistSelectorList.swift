@@ -35,11 +35,9 @@ struct PlaylistSelectorList: View {
                                     image
                                         .resizable()
                                         .scaledToFill()
-                                        .frame(width: 126, height: 126)
-                                        .cornerRadius(100)
+                                        .frame(width: 180, height: 135)
                                         .clipped()
                                 } placeholder: {
-                                    //Vinyl qui tourne à la place ?
                                     ProgressView()
                                 }.padding(.top, 80)
                                 

@@ -11,6 +11,7 @@ struct LandingView: View {
     
     // ViewModel du jeu
     @State var gameVM = GameViewModel()
+    @Environment(LoginViewModel.self) var loginVM
     
     // --- ÉTATS D'ANIMATION (Séquence d'intro) ---
     @State private var showNeon = false      // Étape 1 : Les tubes et le TITRE s'allument
@@ -63,7 +64,7 @@ struct LandingView: View {
                 VStack {
                     // --- Zone Haute : Profil & Shop ---
                     HStack {
-                        NavigationLink(destination: Text("Page Profil à créer")) {
+                        NavigationLink(destination: ProfilView().environment(loginVM)) {
                             CircleButton(icon: "person.fill")
                         }
                         Spacer()
