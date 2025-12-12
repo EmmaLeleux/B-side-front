@@ -65,7 +65,7 @@ struct BuzzerView: View {
                     gameVM.musicOn.toggle()
                     if gameVM.musicOn {
                         if !gameVM.localMusicURLs.isEmpty {
-                            AudioManager.shared.playLocalFile(at: gameVM.localMusicURLs[0])
+                            gameVM.playCurrentSong()
                         }
 
 
@@ -144,6 +144,7 @@ struct BuzzerView: View {
                     gameVM: gameVM,
                     playerID: me.id
                 ) {
+                    
                     showAnswerPopup = false
                     //next song plus tard
                 }

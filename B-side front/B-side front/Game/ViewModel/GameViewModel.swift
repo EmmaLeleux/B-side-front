@@ -16,24 +16,33 @@ final class GameViewModel: NSObject {
     var gameStarted = false
     var currentAnswerSong: String = ""
     var currentAnswerArtist: String = ""
-    var song : String = "You & I"
-    var artist: String = "Dabeull"
+    var song : String = ""
+    var artist: String = ""
     var musicOn : Bool = false
     var selectedPlaylist: Playlist? = nil
     var localMusicURLs: [URL] = []
-    
+    var currentSongIndex: Int = 0
+
+    // 1️⃣ Dans ton GameViewModel
+    var musicURLMap: [String: URL] = [:]
+
+    // 2️⃣ Lors du téléchargement des musiques
     func preloadMusic(completion: @escaping () -> Void) {
         guard let playlist = selectedPlaylist else { return }
-        
+
+        musicURLMap = [:] // reset
         localMusicURLs = []
-        
+
         let group = DispatchGroup()
-        
+
         for music in playlist.musiques {
             group.enter()
             FileDownloader.downloadFile(from: music.son) { localURL in
                 if let localURL = localURL {
                     DispatchQueue.main.async {
+                        // On stocke dans le dictionnaire avec le nom de la musique
+                        let trackName = music.names.first?.name ?? "unknown"
+                        self.musicURLMap[trackName] = localURL
                         self.localMusicURLs.append(localURL)
                         print("✔️ Musique téléchargée :", localURL)
                     }
@@ -41,12 +50,13 @@ final class GameViewModel: NSObject {
                 group.leave()
             }
         }
-        
+
         group.notify(queue: .main) {
             print("✅ Toutes les musiques sont téléchargées !")
             completion()
         }
     }
+
 
     
     func cleanMusic() {
@@ -55,6 +65,36 @@ final class GameViewModel: NSObject {
         }
         localMusicURLs = []
     }
+    
+    func playCurrentSong() {
+        guard let playlist = selectedPlaylist, currentSongIndex < playlist.musiques.count else {
+            print("🎉 Playlist terminée !")
+            stopMusic()
+            return
+        }
+
+        let track = playlist.musiques[currentSongIndex]
+        song = track.names.first?.name ?? ""
+        artist = track.artistes.first?.names.first?.name ?? ""
+        print("Lecture :", song, "-", artist)
+
+        // On récupère l'URL correspondante via le dictionnaire
+        if let url = musicURLMap[song] {
+            AudioManager.shared.playLocalFile(at: url)
+        } else {
+            print("⚠️ URL introuvable pour la musique \(song)")
+        }
+    }
+
+
+
+    func nextSong() {
+        stopMusic()
+        currentSongIndex += 1
+        playCurrentSong()
+    }
+
+    
     
     var players : [Player] = []
     
@@ -87,6 +127,10 @@ final class GameViewModel: NSObject {
         print("Joining as \(multipeerService?.peerID.displayName ?? "unknown")")
     }
     
+    func stopMusic() {
+        AudioManager.shared.stop()
+        musicOn = false
+    }
     
     func addPlayer(peerID: MCPeerID) {
         let colorList = ["#006AF6", "#F60000", "#F6F600", "#29F600"]
@@ -196,6 +240,8 @@ final class GameViewModel: NSObject {
         if let data = try? JSONEncoder().encode(["gameStarted": true]) {
             try? service.session.send(data, toPeers: service.session.connectedPeers, with: .reliable)
         }
+        currentSongIndex = 0
+        playCurrentSong()
     }
     
     func isAnswerCorrect(song: String, artiste: String) -> Bool {
@@ -217,36 +263,40 @@ final class GameViewModel: NSObject {
         sendBuzzerUpdate()
     }
     
-    func validateAnswer(playerID: String, song: String, artist: String) -> (correct: Bool, points: Int){
+    func validateAnswer(playerID: String, song: String, artist: String) -> (correct: Bool, points: Int) {
         guard let index = players.firstIndex(where: { $0.id == playerID }) else { return (false, 0) }
-        
+
         var pointsToAdd = 0
-        
+
         if song.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
             == self.song.lowercased() {
             pointsToAdd += 2
         }
-        
+
         if artist.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
             == self.artist.lowercased() {
             pointsToAdd += 2
         }
-        
-        // Appliquer les points
+
         players[index].points += pointsToAdd
-        
+
         // Reset buzzer state
         for i in players.indices {
             players[i].hasBuzzed = false
             players[i].canAnswer = false
             players[i].isDisabled = false
         }
-        
-        // Broadcast nouvelle liste à tout le monde
+
         broadcastPlayersList()
         
+        if pointsToAdd > 0 {
+            // Bonne réponse → passer au morceau suivant
+            nextSong()
+        }
+
         return (pointsToAdd > 0, pointsToAdd)
     }
+
     
     
     func broadcastPlayersList() {
