@@ -10,6 +10,7 @@ import SwiftUI
 struct LandingView: View {
     
     @State var gameVM = GameViewModel()
+    @Environment(LoginViewModel.self) var loginVM
     
     // MARK: - Body
     var body: some View {
@@ -40,7 +41,7 @@ struct LandingView: View {
                     // --- Zone Haute : Profil & Shop ---
                     HStack {
                         // Bouton Profil (Gauche)
-                        NavigationLink(destination: Text("Page Profil à créer")) {
+                        NavigationLink(destination: ProfilView().environment(loginVM)) {
                             CircleButton(icon: "person.fill")
                         }
                         
