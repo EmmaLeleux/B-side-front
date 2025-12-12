@@ -79,7 +79,7 @@ struct LandingView: View {
                     
                     // --- Zone Basse : Bouton Jouer ---
                     NavigationLink {
-                        EnAttendant(gameVM: $gameVM)
+                        RoomView(gameVM: $gameVM)
                     } label: {
                         PlayButton()
                     }
