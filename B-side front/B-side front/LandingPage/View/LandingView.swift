@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+
 struct LandingView: View {
     
     // ViewModel du jeu
@@ -219,4 +220,5 @@ struct PlayButton: View {
 
 #Preview {
     LandingView()
+        .environment(LoginViewModel())
 }
