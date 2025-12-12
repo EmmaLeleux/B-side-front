@@ -30,18 +30,23 @@ struct CarouselView: View {
                     let zIndex = position == 0 ? 100.0 : 50.0 - absOffset
                     let xOffset = offset * 1.0
                     
-                    Image(items[index].picture)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 280, height: 200)
-                        .cornerRadius(12)
-                        .shadow(color: .black.opacity(0.5), radius: 20, x: 0, y: 10)
-                        .scaleEffect(scale)
-                        .rotation3DEffect(
-                            .degrees(rotation),
-                            axis: (x: 0, y: 1, z: 0),
-                            perspective: 0.5
-                        )
+                    AsyncImage(url: URL(string: items[index].picture)) { image in
+                        image
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 280, height: 200)
+                            .cornerRadius(12)
+                            .shadow(color: .black.opacity(0.5), radius: 20, x: 0, y: 10)
+                            .scaleEffect(scale)
+                            .rotation3DEffect(
+                                .degrees(rotation),
+                                axis: (x: 0, y: 1, z: 0),
+                                perspective: 0.5
+                            )
+                    } placeholder: {
+                        ProgressView()
+                    }
+                        
                         .offset(x: centerX + xOffset - 140)
                         .zIndex(zIndex)
                         .onTapGesture {
