@@ -26,7 +26,7 @@ struct ShopView: View {
             if !vm.playlists.isEmpty {
                 
                 if let user = loginVM.currentUser{
-                    VStack(spacing: 20) {
+                    VStack(spacing: 15) {
                         
                         // Porte monnaie user (Top)
                         HStack {
@@ -133,14 +133,15 @@ struct ShopView: View {
                                     .font(.headline)
                                     .foregroundColor(.white)
                                     .shadow(radius: 4)
-                                    .offset(y: 90)
+                                    .offset(y: 70)
                             }
                         }
-                        .padding()
+                        .padding(.horizontal)
                         
                         
                         Spacer()
                     }
+                    .padding(.bottom, 30)
                 }
             }
         }
