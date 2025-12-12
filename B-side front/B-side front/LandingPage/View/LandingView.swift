@@ -96,7 +96,7 @@ struct LandingView: View {
                 
                 // --- AUDIO ---
                 // Lancement de "Da B Side.mp3"
-                AudioManager.shared.playIntro(filename: "Da B Side")
+                AudioManagerIntro.shared.playIntro(filename: "Da B Side")
                 
                 // 2. Les Néons s'allument + TITRE
                 withAnimation(.easeOut(duration: 0.2)) {
@@ -114,7 +114,7 @@ struct LandingView: View {
             }
             // --- ARRET AUDIO (QUAND ON QUITTE LA PAGE) ---
             .onDisappear {
-                AudioManager.shared.stopIntro()
+                AudioManagerIntro.shared.stopIntro()
             }
         }
         .tint(.white)

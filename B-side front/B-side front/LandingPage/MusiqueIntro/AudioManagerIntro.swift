@@ -7,9 +7,9 @@
 
 import AVFoundation
 
-class AudioManager {
+class AudioManagerIntro {
     // Singleton : Une seule instance pour toute l'app
-    static let shared = AudioManager()
+    static let shared = AudioManagerIntro()
     
     var player: AVAudioPlayer?
     
