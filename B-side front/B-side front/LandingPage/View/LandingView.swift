@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+
 struct LandingView: View {
     
     // ViewModel du jeu
@@ -55,6 +56,8 @@ struct LandingView: View {
                 // MARK: - Layer 3 : Carousel (Selection)
                 VStack {
                     VinylCarouselView()
+                        .environment(LoginViewModel())
+                        .environment(gameVM)
                         .padding(.top, 60)
                     Spacer()
                 }
@@ -79,7 +82,8 @@ struct LandingView: View {
                     
                     // --- Zone Basse : Bouton Jouer ---
                     NavigationLink {
-                        EnAttendant(gameVM: $gameVM)
+                        RoomView()
+                            .environment(gameVM)
                     } label: {
                         PlayButton()
                     }
@@ -216,4 +220,5 @@ struct PlayButton: View {
 
 #Preview {
     LandingView()
+        .environment(LoginViewModel())
 }

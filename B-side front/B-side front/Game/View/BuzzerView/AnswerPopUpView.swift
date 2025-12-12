@@ -46,6 +46,8 @@ struct AnswerPopupView: View {
                             .frame(width: 160)
                         
                         Button("Valider") {
+                            print("Son : \(songAnswer)")
+                            print("Artiste : \(artistAnswer)")
                             let result = gameVM.validateAnswer(
                                 playerID: playerID,
                                 song: songAnswer,

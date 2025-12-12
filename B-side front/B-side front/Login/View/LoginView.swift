@@ -76,6 +76,9 @@ struct LoginView: View {
                         Button(action: {
                             Task{
                                 await loginVM.login(username: username, password: password)
+                               
+                                    print(loginVM.token ?? "vide")
+                    
                             }
                             
                         }, label:{

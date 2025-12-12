@@ -154,3 +154,4 @@ struct ShopView: View {
 #Preview {
     ShopView().environment(LoginViewModel())
 }
+

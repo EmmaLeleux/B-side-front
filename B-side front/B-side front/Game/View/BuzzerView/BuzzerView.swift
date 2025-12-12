@@ -9,8 +9,9 @@ import SwiftUI
 import MultipeerConnectivity
 
 struct BuzzerView: View {
-    @Binding var gameVM : GameViewModel
+    @Environment(GameViewModel.self) var gameVM
     @State private var showAnswerPopup = false
+    @State private var audioManager = AudioManager.shared
     
     var body: some View {
         ZStack {
@@ -62,6 +63,15 @@ struct BuzzerView: View {
                 // Play/Pause
                 Button {
                     gameVM.musicOn.toggle()
+                    if gameVM.musicOn {
+                        if !gameVM.localMusicURLs.isEmpty {
+                            gameVM.playCurrentSong()
+                        }
+
+
+                       } else {
+                           AudioManager.shared.stop()
+                       }
                 } label: {
                     ZStack {
                         Image("Vinyl")
@@ -123,11 +133,18 @@ struct BuzzerView: View {
                let me = gameVM.players.first(where: { $0.id == gameVM.multipeerService?.peerID.displayName }) {
                 
                 AnswerPopupView(
-                    songAnswer: $gameVM.currentAnswerSong,
-                    artistAnswer: $gameVM.currentAnswerArtist,
+                    songAnswer: Binding(
+                        get: { gameVM.currentAnswerSong },
+                        set: { gameVM.currentAnswerSong = $0 }
+                    ),
+                    artistAnswer: Binding(
+                        get: { gameVM.currentAnswerArtist },
+                        set: { gameVM.currentAnswerArtist = $0 }
+                    ),
                     gameVM: gameVM,
                     playerID: me.id
                 ) {
+                    
                     showAnswerPopup = false
                     //next song plus tard
                 }
@@ -153,6 +170,7 @@ struct BuzzerView: View {
     // Simuler que je suis Alice
     mockVM.multipeerService = MultipeerService(displayName: "1")
     
-    return BuzzerView(gameVM: .constant(mockVM))
+    return BuzzerView()
+        .environment(GameViewModel())
 }
 
