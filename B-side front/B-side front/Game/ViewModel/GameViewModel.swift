@@ -19,6 +19,42 @@ final class GameViewModel: NSObject {
     var song : String = "You & I"
     var artist: String = "Dabeull"
     var musicOn : Bool = false
+    var selectedPlaylist: Playlist? = nil
+    var localMusicURLs: [URL] = []
+    
+    func preloadMusic(completion: @escaping () -> Void) {
+        guard let playlist = selectedPlaylist else { return }
+        
+        localMusicURLs = []
+        
+        let group = DispatchGroup()
+        
+        for music in playlist.musiques {
+            group.enter()
+            FileDownloader.downloadFile(from: music.son) { localURL in
+                if let localURL = localURL {
+                    DispatchQueue.main.async {
+                        self.localMusicURLs.append(localURL)
+                        print("✔️ Musique téléchargée :", localURL)
+                    }
+                }
+                group.leave()
+            }
+        }
+        
+        group.notify(queue: .main) {
+            print("✅ Toutes les musiques sont téléchargées !")
+            completion()
+        }
+    }
+
+    
+    func cleanMusic() {
+        for url in localMusicURLs {
+            try? FileManager.default.removeItem(at: url)
+        }
+        localMusicURLs = []
+    }
     
     var players : [Player] = []
     
@@ -31,7 +67,7 @@ final class GameViewModel: NSObject {
     
     func chooseHost() {
         role = .host
-        // crée le service avec le pseudo saisi
+        print(role)
         multipeerService = MultipeerService(displayName: username.isEmpty ? UIDevice.current.name : username)
         // définit le delegate pour recevoir events/session
         multipeerService?.session.delegate = self
@@ -74,18 +110,18 @@ final class GameViewModel: NSObject {
         }
     }
     
-//    func sendPlayersList(to peer: MCPeerID) {
-//        guard let service = multipeerService else { return }
-//
-//        let names = players.map { $0.name }
-//        if let data = try? JSONEncoder().encode(names) {
-//            try? service.session.send(data, toPeers: [peer], with: .reliable)
-//        }
-//    }
+    //    func sendPlayersList(to peer: MCPeerID) {
+    //        guard let service = multipeerService else { return }
+    //
+    //        let names = players.map { $0.name }
+    //        if let data = try? JSONEncoder().encode(names) {
+    //            try? service.session.send(data, toPeers: [peer], with: .reliable)
+    //        }
+    //    }
     
     func sendPlayersList(to peer: MCPeerID) {
         guard let service = multipeerService else { return }
-
+        
         // Encode les players avec toutes les infos y compris colorHex
         if let data = try? JSONEncoder().encode(players) {
             try? service.session.send(data, toPeers: [peer], with: .reliable)
@@ -124,7 +160,7 @@ final class GameViewModel: NSObject {
             try? service.session.send(data, toPeers: service.session.connectedPeers, with: .reliable)
         }
     }
-
+    
     
     // Quand on reçoit la liste mise à jour
     func updatePlayersFromData(_ data: Data) {
@@ -148,8 +184,8 @@ final class GameViewModel: NSObject {
             }
         }
     }
-
-
+    
+    
     
     func startGame() {
         guard role == .host else { return }
@@ -161,14 +197,14 @@ final class GameViewModel: NSObject {
             try? service.session.send(data, toPeers: service.session.connectedPeers, with: .reliable)
         }
     }
-
+    
     func isAnswerCorrect(song: String, artiste: String) -> Bool {
         let correctSong = (song.lowercased() == self.song.lowercased())
         let correctArtist = (artiste.lowercased() == self.artist.lowercased())
-
+        
         return correctSong || correctArtist
     }
-
+    
     
     func wrongAnswer(playerID: String) {
         // Débloquer tous les buzzers si reponse fausse
@@ -183,39 +219,39 @@ final class GameViewModel: NSObject {
     
     func validateAnswer(playerID: String, song: String, artist: String) -> (correct: Bool, points: Int){
         guard let index = players.firstIndex(where: { $0.id == playerID }) else { return (false, 0) }
-
+        
         var pointsToAdd = 0
-
+        
         if song.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
             == self.song.lowercased() {
             pointsToAdd += 2
         }
-
+        
         if artist.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
             == self.artist.lowercased() {
             pointsToAdd += 2
         }
-
+        
         // Appliquer les points
         players[index].points += pointsToAdd
-
+        
         // Reset buzzer state
         for i in players.indices {
             players[i].hasBuzzed = false
             players[i].canAnswer = false
             players[i].isDisabled = false
         }
-
+        
         // Broadcast nouvelle liste à tout le monde
         broadcastPlayersList()
         
         return (pointsToAdd > 0, pointsToAdd)
     }
     
-
+    
     func broadcastPlayersList() {
         guard let service = multipeerService else { return }
-
+        
         if let data = try? JSONEncoder().encode(players) {
             try? service.session.send(
                 data,
@@ -224,8 +260,8 @@ final class GameViewModel: NSObject {
             )
         }
     }
-
-
+    
+    
     
 }
 
@@ -245,12 +281,12 @@ extension GameViewModel: MCSessionDelegate {
                 addPlayer(peerID: peerID)
                 
                 broadcastPlayersList()
-
+                
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                     self.broadcastPlayersList()
                 }
             }
-
+            
             
             
         case .notConnected:
@@ -266,7 +302,7 @@ extension GameViewModel: MCSessionDelegate {
     
     // 2) réception de Data (messages)
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
-
+        
         // Début de partie
         if let dict = try? JSONDecoder().decode([String: Bool].self, from: data),
            let started = dict["gameStarted"], started {
@@ -275,12 +311,12 @@ extension GameViewModel: MCSessionDelegate {
             }
             return
         }
-
+        
         // Mise à jour complète des players
         if let updatedPlayers = try? JSONDecoder().decode([Player].self, from: data) {
             DispatchQueue.main.async {
                 self.players = updatedPlayers
-
+                
                 // Ajoute le player local si pas déjà présent
                 if let myPeerID = self.multipeerService?.peerID,
                    !self.players.contains(where: { $0.id == myPeerID.displayName }) {
@@ -289,13 +325,13 @@ extension GameViewModel: MCSessionDelegate {
             }
             return
         }
-
+        
         // Sinon texte simple (debug)
         if let text = String(data: data, encoding: .utf8) {
             print("MCSession didReceive data from \(peerID.displayName): \(text)")
         }
     }
-
+    
     
     // 3) réception de stream (non utilisé ici, mais requis)
     func session(_ session: MCSession, didReceive stream: InputStream, withName streamName: String, fromPeer peerID: MCPeerID) {

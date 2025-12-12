@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct RoomView: View {
-    @Binding var gameVM: GameViewModel
-    
+    @Environment(GameViewModel.self) var gameVM
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -27,7 +27,10 @@ struct RoomView: View {
                             .frame(width: 284, height: 62)
                             .foregroundColor(.white)
                         
-                        TextField("Saisir pseudo", text: $gameVM.username)
+                        TextField("Saisir pseudo",text: Binding(
+                            get: { gameVM.username},
+                            set: { gameVM.username = $0 }
+                        ))
                             .foregroundStyle(Color.black)
                             .padding(.leading, 120)
                     }
@@ -87,8 +90,12 @@ struct RoomView: View {
                     }
                     
                 }
-                .navigationDestination(isPresented: $gameVM.showLobby) {
-                    LobbyView(gameVM: $gameVM)
+                .navigationDestination(isPresented: Binding(
+                    get: { gameVM.showLobby },
+                    set: { gameVM.showLobby = $0 }
+                )) {
+                    LobbyView()
+                        .environment(gameVM)
                 }
             }
         }
@@ -96,5 +103,6 @@ struct RoomView: View {
 }
 
 #Preview {
-    RoomView(gameVM: .constant(GameViewModel()))
+    RoomView()
+        .environment(GameViewModel())
 }

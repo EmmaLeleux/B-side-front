@@ -10,6 +10,7 @@ import SwiftUI
 struct VinylCarouselView: View {
     @State private var vm = CarouselViewModel()
     @Environment(LoginViewModel.self) var loginVM
+    @Environment(GameViewModel.self) var gameVM
     @State private var dragOffset: Double = 0
     @State var selectedPlaylist: Playlist? = nil
     // État pour gérer l'animation de pression
@@ -40,7 +41,7 @@ struct VinylCarouselView: View {
                     let carouselScale = 0.8 + (0.5 * max(0, heightFactor))
                     
                     // FACTEUR D'ÉCHELLE DE PRESSION (Si on appuie dessus)
-                    let pressScale = (selectedPlaylist == playlist) ? 0.9 : 1.0
+                    let pressScale = (gameVM.selectedPlaylist == playlist) ? 0.9 : 1.0
                     
                     if isVisible {
                         VStack {
@@ -83,14 +84,14 @@ struct VinylCarouselView: View {
                 }
         )
         // Petit retour haptique pour le style (optionnel)
-        .sensoryFeedback(.selection, trigger: selectedPlaylist)
+        .sensoryFeedback(.selection, trigger: gameVM.selectedPlaylist)
     }
     
     // Fonction pour gérer l'effet "Ressort" du bouton
     private func animatePress(for genre: Playlist) {
         // 1. On enfonce le bouton
         withAnimation(.easeOut(duration: 0.1)) {
-            selectedPlaylist = genre
+            gameVM.selectedPlaylist = genre
         }
         
         // 2. On le relâche (rebond)
@@ -109,6 +110,8 @@ struct VinylCarouselView: View {
 #Preview {
     ZStack {
         Color.black.ignoresSafeArea()
-        VinylCarouselView().environment(LoginViewModel())
+        VinylCarouselView()
+            .environment(GameViewModel())
+            .environment(LoginViewModel())
     }
 }

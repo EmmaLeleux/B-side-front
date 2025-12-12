@@ -55,6 +55,8 @@ struct LandingView: View {
                 // MARK: - Layer 3 : Carousel (Selection)
                 VStack {
                     VinylCarouselView()
+                        .environment(LoginViewModel())
+                        .environment(gameVM)
                         .padding(.top, 60)
                     Spacer()
                 }
@@ -79,7 +81,8 @@ struct LandingView: View {
                     
                     // --- Zone Basse : Bouton Jouer ---
                     NavigationLink {
-                        RoomView(gameVM: $gameVM)
+                        RoomView()
+                            .environment(gameVM)
                     } label: {
                         PlayButton()
                     }
