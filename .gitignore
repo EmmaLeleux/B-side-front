@@ -60,3 +60,5 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
+.DS_Store
+.DS_Store B-side front/.DS_Store B-side front/B-side front/.DS_Store B-side front/B-side front/Shared/.DS_Store
