@@ -62,16 +62,19 @@ struct BuzzerView: View {
                 
                 // Play/Pause
                 Button {
-                    gameVM.musicOn.toggle()
-                    if gameVM.musicOn {
-                        if !gameVM.localMusicURLs.isEmpty {
-                            gameVM.playCurrentSong()
+                    if gameVM.role == .host {
+                            gameVM.musicOn.toggle()
+                            if gameVM.musicOn {
+                                gameVM.playCurrentSong()
+                                gameVM.broadcastMusicCommand("play")
+                            } else {
+                                AudioManager.shared.stop()
+                                gameVM.broadcastMusicCommand("pause")
+                            }
+                        } else {
+                            
+                            gameVM.broadcastMusicCommand(gameVM.musicOn ? "pause" : "play")
                         }
-
-
-                       } else {
-                           AudioManager.shared.stop()
-                       }
                 } label: {
                     ZStack {
                         Image("Vinyl")

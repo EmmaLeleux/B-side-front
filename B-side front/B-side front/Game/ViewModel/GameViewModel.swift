@@ -58,7 +58,37 @@ final class GameViewModel: NSObject {
     }
 
 
-    
+    func broadcastMusicCommand(_ command: String) {
+        guard let service = multipeerService else { return }
+        if let data = try? JSONEncoder().encode(["musicCommand": command, "song": song]) {
+            try? service.session.send(data, toPeers: service.session.connectedPeers, with: .reliable)
+        }
+    }
+
+    func downloadTracks(_ names: [String]) {
+        guard let playlist = selectedPlaylist else { return }
+
+        for trackName in names {
+            if let music = playlist.musiques.first(where: { $0.names.first?.name == trackName }) {
+                FileDownloader.downloadFile(from: music.son) { localURL in
+                    if let url = localURL {
+                        self.musicURLMap[trackName] = url
+                    }
+                }
+            }
+        }
+    }
+
+    func sendPlaylistToClients() {
+        guard let service = multipeerService, role == .host,
+              let playlist = selectedPlaylist else { return }
+
+        let trackNames = playlist.musiques.map { $0.names.first?.name ?? "unknown" }
+        if let data = try? JSONEncoder().encode(["trackNames": trackNames]) {
+            try? service.session.send(data, toPeers: service.session.connectedPeers, with: .reliable)
+        }
+    }
+
     func cleanMusic() {
         for url in localMusicURLs {
             try? FileManager.default.removeItem(at: url)
@@ -92,7 +122,9 @@ final class GameViewModel: NSObject {
         stopMusic()
         currentSongIndex += 1
         playCurrentSong()
+        broadcastMusicCommand("next") // notifier les clients
     }
+
 
     
     
@@ -375,6 +407,32 @@ extension GameViewModel: MCSessionDelegate {
             }
             return
         }
+        
+        if let dict = try? JSONDecoder().decode([String: String].self, from: data),
+           let command = dict["musicCommand"],
+           let trackName = dict["song"] {
+
+            switch command {
+            case "play":
+                if let url = musicURLMap[trackName] {
+                    AudioManager.shared.playLocalFile(at: url)
+                }
+            case "pause":
+                AudioManager.shared.stop()
+            case "next":
+                currentSongIndex += 1
+                playCurrentSong()
+            default:
+                break
+            }
+        }
+
+        // Si c'est la liste de musiques envoyée par l'hôte
+        if let dict = try? JSONDecoder().decode([String: [String]].self, from: data),
+           let trackNames = dict["trackNames"] {
+            downloadTracks(trackNames)
+        }
+
         
         // Sinon texte simple (debug)
         if let text = String(data: data, encoding: .utf8) {
