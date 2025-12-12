@@ -75,7 +75,7 @@ struct LoginView: View {
                     VStack{
                         Button(action: {
                             Task{
-                                try await loginVM.login(username: username, password: password)
+                                await loginVM.login(username: username, password: password)
                             }
                             
                         }, label:{
