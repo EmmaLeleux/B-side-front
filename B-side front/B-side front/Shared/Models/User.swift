@@ -10,7 +10,7 @@ import Foundation
 struct User: Codable, Identifiable, Equatable {
     let id: UUID
     let username: String
-    let money: Int
+    var money: Int
     let picture: String
     let playlists: [Playlist]
     let badges: [Badge]
