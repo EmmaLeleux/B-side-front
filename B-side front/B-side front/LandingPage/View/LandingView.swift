@@ -8,6 +8,9 @@
 import SwiftUI
 
 struct LandingView: View {
+    
+    @State var gameVM = GameViewModel()
+    
     // MARK: - Body
     var body: some View {
         NavigationStack {
@@ -54,10 +57,14 @@ struct LandingView: View {
                     Spacer() // Pousse le bouton Jouer vers le bas
                     
                     // --- Zone Basse : Bouton Jouer ---
-                    NavigationLink(destination: Text("Lancement de la partie...")) {
+                    NavigationLink {
+                        EnAttendant(gameVM: $gameVM)
+                            
+                    } label: {
                         PlayButton()
                     }
                     .padding(.bottom, 50)
+
                 }
             }
         }

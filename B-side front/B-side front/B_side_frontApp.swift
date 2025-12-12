@@ -11,7 +11,8 @@ import SwiftUI
 struct B_side_frontApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+//            ContentView()
+            LandingView()
         }
     }
 }
