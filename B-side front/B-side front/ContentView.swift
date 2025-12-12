@@ -15,11 +15,6 @@ struct ContentView: View {
             if loginVM.isAuthenticated{
                 LandingView()
                 
-                Button(action: {
-                    loginVM.logout()
-                }, label: {
-                    Text("déconnexion")
-                })
             }
             else{
                 LoginView()
