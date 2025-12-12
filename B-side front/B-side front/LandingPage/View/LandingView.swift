@@ -69,7 +69,7 @@ struct LandingView: View {
                             CircleButton(icon: "person.fill")
                         }
                         Spacer()
-                        NavigationLink(destination: Text("Page Shop à créer")) {
+                        NavigationLink(destination: ShopView().environment(loginVM)) {
                             CircleButton(icon: "cart.fill")
                         }
                     }
